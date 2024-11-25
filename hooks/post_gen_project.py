@@ -22,7 +22,6 @@ create_repo = "{{cookiecutter.create_repo}}" == 'y'
 # non-appropriate files get removed.
 #
 # If specialisations for a given file do exist, but just not for this specific
-# project, then the second loop takes care of removing the files completely.
 postfixes = ( '.AnalysisBase', '.AthAnalysis', '.Hybrid' )
 fileSpecialisationsSeen = {}
 for root, subdirs, files in os.walk( os.getcwd() ):
@@ -68,7 +67,7 @@ def findGroup( mgr, name ):
 
     # Tokenize the name:
     names = name.split( '/' )
-
+    print( 'Looking for group "%s"' % name )
     # Find the "main" group:
     current_group = None
     ids = mgr.groups.list( search = names[ 0 ] )
@@ -77,7 +76,7 @@ def findGroup( mgr, name ):
             current_group = candidate_group
             break
         pass
-
+    print( 'Found group "%s"' % names[ 0 ] )
     # Now look for sub-groups in this main group recursively:
     for group_name in names[ 1 : ]:
         # Make sure that we still have a valid group to operate on:
@@ -93,6 +92,7 @@ def findGroup( mgr, name ):
                 break
             pass
         pass
+    print( 'Found group "%s"' % name )
 
     # A final security check:
     if current_group:
@@ -108,7 +108,7 @@ def create_repository(server, token, gitlabname, api_version=4):
     import gitlab
     import base64
     import mimetypes
-
+    print( 'Creating repository' )
     gl = gitlab.Gitlab( server, private_token = token,
                         api_version = 4 )
     gl.auth()
@@ -143,10 +143,11 @@ def create_repository(server, token, gitlabname, api_version=4):
         pass
 
     # Find the atlas-physics group.
-    atlas_id = findGroup( gl, 'atlas-physics' )
-    if not atlas_id:
-        raise( 'Could not find the "atlas-physics" group!' )
-        pass
+    atlas_id = user_id 
+    # findGroup( gl, 'atlas-physics' )
+    # if not atlas_id:
+    #     raise( 'Could not find the "atlas-physics" group!' )
+    #     pass
 
     # Make sure that the repository doesn't exist yet.
     projects = id.projects.list( search = projectname )
@@ -167,36 +168,51 @@ def create_repository(server, token, gitlabname, api_version=4):
     project = gl.projects.create( args )
     print( 'Created project "%s"' % projectname )
 
-    # Set its properties.
-    project.share( atlas_id.id, gitlab.REPORTER_ACCESS )
-
-    # Commit/upload all files to it.
-    commit_data = {
-        'branch'        : 'master',
-        'commit_message': 'Initial commit',
-        'author_email'  : useremail,
-        'actions'       : []
-        }
-    for root, subdirs, files in os.walk( os.getcwd() ):
-        for upload_file in files:
-            file_path = os.path.relpath( os.path.join( root, upload_file ) )
-            file_type = mimetypes.guess_type( file_path )
-            print(file_path, file_type, root, upload_file)
-            content = open( file_path, 'rb' ).read()
-            action = { 'action'    : 'create',
-                       'file_path' : file_path }
-            if file_type[ 0 ] == 'image/png':
-                action[ 'content' ] = base64.b64encode( content )
-                action[ 'encoding' ] = 'base64'
-            else:
-                action[ 'content' ] = content
+    try:
+        print( 'Sharing the repository with the "atlas-physics" group' )
+        # Set its properties.
+        print ('atlas_id:', atlas_id.id)
+        # project.share( atlas_id.id, gitlab.const.AccessLevel.OWNER )
+        print( 'Shared the repository with the "atlas-physics" group' )
+        # Commit/upload all files to it.
+        commit_data = {
+            'branch'        : 'master',
+            'commit_message': 'Initial commit',
+            'author_email'  : useremail,
+            'actions'       : []
+            }
+        print ('Uploading files to the repository')
+        for root, subdirs, files in os.walk( os.getcwd() ):
+            for upload_file in files:
+                file_path = os.path.relpath( os.path.join( root, upload_file ) )
+                file_type = mimetypes.guess_type( file_path )
+                print(file_path, file_type, root, upload_file)
+                content = open( file_path, 'rb' ).read()
+                action = { 'action'    : 'create',
+                        'file_path' : file_path }
+                if file_type[ 0 ] == 'image/png':
+                    encoded_content = base64.b64encode(content).decode('utf-8')
+                    action[ 'content' ] = encoded_content
+                    action[ 'encoding' ] = 'base64'
+                else:
+                    action[ 'content' ] = content.decode( 'utf-8' )
+                    pass
+                commit_data[ 'actions' ].append( action )
                 pass
-            commit_data[ 'actions' ].append( action )
             pass
-        pass
-    commit = project.commits.create( commit_data )
-    print( 'Uploaded the initial commit to it' )
-
+        commit = project.commits.create( commit_data )
+        print( 'Uploaded the initial commit to it' )
+    except Exception as e:
+        print(e)
+        project.delete()
+        
+        
+        
+        
+        
+        
+        
 if create_repo:
     create_repository(server, token, gitlabname)
     print( 'Git repository created and committed' )
+
