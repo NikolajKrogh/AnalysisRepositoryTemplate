@@ -130,20 +130,20 @@ def create_repository(server, token, gitlabname, api_version=4):
         id = group_id
         pass
 
-    if not id:
-        raise ValueError('Could not find user/group with name "%s"' % gitlabname)
-        pass
+    # if not id:
+    #     raise ValueError('Could not find user/group with name "%s"' % gitlabname)
+    #     pass
 
     # Make sure that if a user ID was specified, we are authenticating as that user.
-    if user_id:
-        if gitlabname != gl.user.username:
-            raise ValueError( 'Requesting repository for "%s", but authenticated as "%s"' %
-                   ( gitlabname, gl.user.username ) )
-            pass
-        pass
+    # if user_id:
+    #     if gitlabname != gl.user.username:
+    #         raise ValueError( 'Requesting repository for "%s", but authenticated as "%s"' %
+    #                ( gitlabname, gl.user.username ) )
+    #         pass
+    #     pass
 
     # Find the atlas-physics group.
-    atlas_id = user_id 
+    atlas_id = 37284 
     # findGroup( gl, 'atlas-physics' )
     # if not atlas_id:
     #     raise( 'Could not find the "atlas-physics" group!' )
