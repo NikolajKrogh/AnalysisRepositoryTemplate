@@ -7,14 +7,22 @@ import os
 import glob
 
 # Constants:
-server = "https://gitlab.cern.ch"
-gitlabname = "{{cookiecutter.gitlab_name}}"
-useremail = "{{cookiecutter.contact_email}}"
+# server = "https://gitlab.cern.ch"
+# gitlabname = "{{cookiecutter.gitlab_name}}"
+# useremail = "{{cookiecutter.contact_email}}"
 token = "{{cookiecutter.gitlab_token}}"
-projectname = "{{cookiecutter.project_name}}"
-description = "{{cookiecutter.short_descr}}"
-baserelease = "{{cookiecutter.base_release}}"
-create_repo = "{{cookiecutter.create_repo}}" == 'y'
+# projectname = "{{cookiecutter.project_name}}"
+# description = "{{cookiecutter.short_descr}}"
+# baserelease = "{{cookiecutter.base_release}}"
+# create_repo = "{{cookiecutter.create_repo}}" == 'y'
+
+server = "https://gitlab.cern.ch"
+gitlabname = "nkrogh"
+useremail = "nkrogh20@student.aau.dk"
+projectname = "Test"
+description = "Repository for the RAuxStore Benchmark"
+baserelease = "AnalysisBase"
+create_repo = True
 
 # As a first thing, clean up the generated project. The logic here is that
 # files ending in ".AnalysisBase", ".AthAnalysis" or ".Hybrid" are renamed to
@@ -171,8 +179,8 @@ def create_repository(server, token, gitlabname, api_version=4):
     try:
         print( 'Sharing the repository with the "atlas-physics" group' )
         # Set its properties.
-        print ('atlas_id:', atlas_id.id)
-        # project.share( atlas_id.id, gitlab.const.AccessLevel.OWNER )
+        # print ('atlas_id:', atlas_id.id)
+        # project.share( atlas_id, gitlab.const.AccessLevel.OWNER )
         print( 'Shared the repository with the "atlas-physics" group' )
         # Commit/upload all files to it.
         commit_data = {
